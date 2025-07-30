@@ -1,0 +1,63 @@
+CREATE OR ALTER VIEW [sde].[VW_TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE_PIVOT] AS
+WITH Unpivoted AS (
+    SELECT REPLACE(lakesegment, '_', ' ') AS lakesegment, '2010' AS Year, yr_2010 AS Value FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2011', yr_2011 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2012', yr_2012 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2013', yr_2013 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2014', yr_2014 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2015', yr_2015 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2016', yr_2016 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2017', yr_2017 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2018', yr_2018 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2019', yr_2019 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2020', yr_2020 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2021', yr_2021 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2022', yr_2022 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2023', yr_2023 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2024', yr_2024 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2025', yr_2025 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2026', yr_2026 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2027', yr_2027 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2028', yr_2028 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2029', yr_2029 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2030', yr_2030 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2031', yr_2031 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2032', yr_2032 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2033', yr_2033 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2034', yr_2034 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2035', yr_2035 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+    UNION ALL SELECT REPLACE(lakesegment, '_', ' '), '2036', yr_2036 FROM [sde].[TRACKING_IMPLEMENTATIONMODEL_CUMULATIVE]
+)
+SELECT 
+    Year AS [Years],
+    [South Lake B],
+    [South Lake A],
+    [Port Henry],
+    [Otter Creek],
+    [Main Lake],
+    [Shelburne Bay],
+    [Burlington Bay],
+    [Malletts Bay],
+    [Northeast Arm],
+    [St. Albans Bay],
+    [Mississquoi Bay],
+    [Isle La Motte]
+FROM Unpivoted
+PIVOT
+(
+    SUM(Value)
+    FOR lakesegment IN (
+        [South Lake B],
+        [South Lake A],
+        [Port Henry],
+        [Otter Creek],
+        [Main Lake],
+        [Shelburne Bay],
+        [Burlington Bay],
+        [Malletts Bay],
+        [Northeast Arm],
+        [St. Albans Bay],
+        [Mississquoi Bay],
+        [Isle La Motte]
+    )
+) AS Pivoted
