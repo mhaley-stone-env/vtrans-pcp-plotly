@@ -6,60 +6,123 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <div id="chart" style="width: 100%; height: 600px;"></div>
+ <div id="chart" style="width: 100%; height: 600px;"></div>
 
-    <script>
-        // Hardcoded segment for testing
-        const segment = "Main Lake";
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+  const serviceUrl =
+    "https://services.arcgis.com/pwNwIGBE7M7VOXjQ/arcgis/rest/services/LCB_Implementation_Model_Cumulative_Table/FeatureServer/0/query";
+  const queryUrl = `${serviceUrl}?where=1=1&outFields=*&f=json&orderByFields=Years`;
 
-        // ArcGIS REST Feature Layer URL
-        const serviceUrl = "https://services.arcgis.com/pwNwIGBE7M7VOXjQ/arcgis/rest/services/LCB_Implementation_Model_Cumulative_Table/FeatureServer/0/query";
-        const queryUrl = `${serviceUrl}?where=${encodeURIComponent("lakesegment='" + segment + "'")}&outFields=*&f=json`;
+  const segmentColors = {
+    "South Lake B": "#1f77b4",
+    "South Lake A": "#ff7f0e",
+    "Port Henry": "#2ca02c",
+    "Otter Creek": "#d62728",
+    "Main Lake": "#9467bd",
+    "Shelburne Bay": "#8c564b",
+    "Burlington Bay": "#e377c2",
+    "Malletts Bay": "#7f7f7f",
+    "Northeast Arm": "#bcbd22",
+    "St. Albans Bay": "#17becf",
+    "Mississquoi Bay": "#aec7e8",
+    "Isle La Motte": "#ffbb78"
+  };
 
-        // Fetch data
-        fetch(queryUrl)
-            .then(response => response.json())
-            .then(data => {
-                if (!data.features || data.features.length === 0) {
-                    document.getElementById('chart').innerHTML = '<p>No data found.</p>';
-                    return;
-                }
+  fetch(queryUrl)
+    .then((response) => response.json())
+    .then((data) => {
+      if (!data.features || data.features.length === 0) {
+        document.getElementById("chart").innerHTML = "<p>No data found.</p>";
+        return;
+      }
 
-                // Extract first row's attributes
-                const attributes = data.features[0].attributes;
+      const features = data.features;
+      const sample = features[0].attributes;
+      const allFields = Object.keys(sample);
+      const segments = allFields.filter(
+        (f) => f !== "Years" && f !== "ESRI_OID"
+      );
 
-                // Extract all year columns (yr_2010 ... yr_2036)
-                const years = Object.keys(attributes)
-                    .filter(key => key.startsWith('yr_'))
-                    .map(key => key.replace('yr_', ''))
-                    .sort();
+      const years = features.map((f) => f.attributes.Years);
 
-                const values = years.map(y => attributes[`yr_${y}`]);
+      // Create stacked traces
+      let traces = segments.map((segment) => {
+        return {
+          x: years,
+          y: features.map((f) => f.attributes[segment]),
+          stackgroup: "one",
+          mode: "lines",
+          name: segment,
+          line: { color: segmentColors[segment] || undefined },
+          hovertemplate: `${segment} - %{y:.2f}<extra></extra>`
+        };
+      });
 
-                // Build the Plotly trace
-                const trace = {
-                    x: years,
-                    y: values,
-                    type: 'scatter',
-                    mode: 'lines',
-                    fill: 'tozeroy',
-                    name: segment
-                };
+      // Calculate total for each year
+      const totals = years.map((year, i) => {
+        return segments.reduce((sum, segment) => {
+          return sum + (features[i].attributes[segment] || 0);
+        }, 0);
+      });
 
-                const layout = {
-                    title: `Implementation Model Cumulative - ${segment}`,
-                    xaxis: { title: 'Year' },
-                    yaxis: { title: 'Value' },
-                    showlegend: true
-                };
+      // Add text trace for totals
+      traces.push({
+        x: years,
+        y: totals,
+        text: totals.map((val) => val.toFixed(1)),
+        mode: "text",
+        textposition: "top center",
+        textfont: { color: "grey", size: 10 },
+        hoverinfo: "skip",
+        showlegend: false
+      });
 
-                // Render chart
-                Plotly.newPlot('chart', [trace], layout);
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-                document.getElementById('chart').innerHTML = '<p>Error loading data.</p>';
-            });
-    </script>
+      const targetValue = 1605.9;
+
+      const layout = {
+        title: "Implementation Model Cumulative by Lake Segment",
+        xaxis: { 
+          title: "Year",
+          range: [2010, 2036] // lock axis to 2010–2036
+        },
+        yaxis: { title: "Phosphorus Load Reduction (kg/year)" },
+        legend: { orientation: "v", x: 1.05, y: 1 },
+        margin: { r: 250 },
+        hovermode: "x unified",
+        shapes: [
+          {
+            type: "line",
+            x0: 2010,
+            x1: 2036,
+            y0: targetValue,
+            y1: targetValue,
+            xref: "x",
+            yref: "y",
+            line: { color: "green", width: 2, dash: "dash" }
+          }
+        ],
+        annotations: [
+          {
+            x: 2013,
+            y: targetValue + 50,
+            xref: "x",
+            yref: "y",
+            text: "Phase 4 & Total Target P Load Reduction (kg/year): 1,605.9",
+            font: { color: "black", size: 12 },
+            showarrow: false,
+            align: "left"
+          }
+        ]
+      };
+
+      Plotly.newPlot("chart", traces, layout);
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+      document.getElementById("chart").innerHTML =
+        "<p>Error loading data.</p>";
+    });
+</script>
 </body>
 </html>
