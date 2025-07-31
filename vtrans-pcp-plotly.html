@@ -6,7 +6,7 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
- <div id="chart" style="width: 100%; height: 600px;"></div>
+<div id="chart" style="width: 100%; height: 800px;"></div>
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script>
@@ -80,43 +80,92 @@
 
       const targetValue = 1605.9;
 
+      // Guide bar points
+      const guidePoints = [
+        { x: 2020, y: 401.5, text: "Phase 1 (25% of Target)" },
+        { x: 2024, y: 803.0, text: "Phase 2 (50% of Target)" },
+        { x: 2028, y: 1204.4, text: "Phase 3 (75% of Target)" },
+        { x: 2032, y: 1605.9, text: "" } // last one without text
+      ];
+
+      // Add vertical guide bars
+      const shapes = [
+        {
+          type: "line",
+          x0: 2010,
+          x1: 2036,
+          y0: targetValue,
+          y1: targetValue,
+          xref: "x",
+          yref: "y",
+          line: { color: "green", width: 2, dash: "dash" }
+        },
+        ...guidePoints.map((p) => ({
+          type: "line",
+          x0: p.x,
+          x1: p.x,
+          y0: 0,
+          y1: p.y,
+          xref: "x",
+          yref: "y",
+          line: { color: "lightgrey", width: 1, dash: "dot" }
+        }))
+      ];
+
+      // Add circle markers at top of vertical lines
+      traces.push({
+        x: guidePoints.map((p) => p.x),
+        y: guidePoints.map((p) => p.y),
+        mode: "markers",
+        marker: { color: "lightgrey", size: 10 },
+        hoverinfo: "skip",
+        showlegend: false
+      });
+
+      // Add annotations for the first 3 guide points
+      const annotations = [
+        {
+          x: 2013,
+          y: targetValue + 50,
+          xref: "x",
+          yref: "y",
+          text: "Phase 4 & Total Target P Load Reduction (kg/year): 1,605.9",
+          font: { color: "black", size: 12 },
+          showarrow: false,
+          align: "left"
+        },
+        ...guidePoints
+          .filter((p) => p.text)
+          .map((p) => ({
+            x: p.x,
+            y: p.y + 100, // shifted higher above circle
+            xref: "x",
+            yref: "y",
+            text: p.text,
+            font: { color: "black", size: 11 },
+            showarrow: false,
+            align: "center"
+          }))
+      ];
+
       const layout = {
         title: "Implementation Model Cumulative by Lake Segment",
+        height: 800, // fixed larger height
         xaxis: { 
           title: "Year",
-          range: [2010, 2036] // lock axis to 2010–2036
+          range: [2010, 2036]
         },
         yaxis: { title: "Phosphorus Load Reduction (kg/year)" },
         legend: { orientation: "v", x: 1.05, y: 1 },
         margin: { r: 250 },
         hovermode: "x unified",
-        shapes: [
-          {
-            type: "line",
-            x0: 2010,
-            x1: 2036,
-            y0: targetValue,
-            y1: targetValue,
-            xref: "x",
-            yref: "y",
-            line: { color: "green", width: 2, dash: "dash" }
-          }
-        ],
-        annotations: [
-          {
-            x: 2013,
-            y: targetValue + 50,
-            xref: "x",
-            yref: "y",
-            text: "Phase 4 & Total Target P Load Reduction (kg/year): 1,605.9",
-            font: { color: "black", size: 12 },
-            showarrow: false,
-            align: "left"
-          }
-        ]
+        shapes: shapes,
+        annotations: annotations
       };
 
-      Plotly.newPlot("chart", traces, layout);
+      const config = { responsive: true };
+
+      Plotly.newPlot("chart", traces, layout, config);
     })
     .catch((error) => {
       console.error("Error fetching data:", error);
